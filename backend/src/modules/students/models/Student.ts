@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { BaseDocument, StudentStatus } from '../../../types';
+import { BaseDocument, StudentStatus } from '../../../types/index';
 
 export interface IStudent extends BaseDocument {
+  userId?: mongoose.Types.ObjectId;
   firstName: string;
   lastName: string;
   dob: Date;
@@ -60,6 +61,11 @@ const studentSchema = new Schema<IStudent>(
     classId: {
       type: Schema.Types.ObjectId,
       ref: 'Class',
+      index: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       index: true,
     },
     status: {

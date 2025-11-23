@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import Student from '../models/Student';
 import Guardian from '../models/Guardian';
+import Grade from '../../exams/models/Grade';
+import Attendance from '../../attendance/models/Attendance';
+import Invoice from '../../finance/models/Invoice';
 import { authenticate, authorize } from '../../../middlewares/auth';
 import { asyncHandler } from '../../../utils/errors';
 import { AuthRequest, StudentStatus, PaginatedResponse } from '../../../types';
@@ -56,6 +59,36 @@ router.get('/', authenticate, asyncHandler(async (req: AuthRequest, res) => {
   const status = req.query.status as string;
 
   const query: any = { deletedAt: null };
+
+  // Get the current student's grades
+  router.get('/me/grades', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+    const student = await Student.findOne({ userId, deletedAt: null });
+    if (!student) throw new AppError(404, 'NOT_FOUND', 'Student not found for current user');
+
+    const grades = await Grade.find({ studentId: student._id }).populate('subjectId', 'name').populate('examId', 'name').sort({ createdAt: -1 });
+    res.json({ data: grades });
+  }));
+
+  // Get the current student's attendance
+  router.get('/me/attendance', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+    const student = await Student.findOne({ userId, deletedAt: null });
+    if (!student) throw new AppError(404, 'NOT_FOUND', 'Student not found for current user');
+
+    const records = await Attendance.find({ studentId: student._id }).sort({ date: -1 });
+    res.json({ data: records });
+  }));
+
+  // Get the current student's invoices
+  router.get('/me/invoices', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+    const student = await Student.findOne({ userId, deletedAt: null });
+    if (!student) throw new AppError(404, 'NOT_FOUND', 'Student not found for current user');
+
+    const invoices = await Invoice.find({ studentId: student._id }).sort({ dueDate: -1 });
+    res.json({ data: invoices });
+  }));
   if (q) {
     query.$or = [
       { firstName: { $regex: q, $options: 'i' } },
@@ -71,6 +104,7 @@ router.get('/', authenticate, asyncHandler(async (req: AuthRequest, res) => {
     .skip((page - 1) * pageSize)
     .limit(pageSize)
     .populate('classId', 'name gradeLevel')
+    .populate('userId', 'email firstName lastName')
     .sort({ createdAt: -1 });
 
   const response: PaginatedResponse<any> = {
@@ -87,9 +121,23 @@ router.get('/', authenticate, asyncHandler(async (req: AuthRequest, res) => {
 }));
 
 // Get single student
+// Get current authenticated student's profile
+router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+  const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+  const student = await Student.findOne({ userId, deletedAt: null }).populate('classId', 'name gradeLevel').populate('userId', 'email firstName lastName');
+
+  if (!student) {
+    throw new AppError(404, 'NOT_FOUND', 'Student not found for current user');
+  }
+
+  res.json({ data: student });
+}));
+
+// Get single student by id
 router.get('/:id', authenticate, asyncHandler(async (req: AuthRequest, res) => {
   const student = await Student.findOne({ _id: req.params.id, deletedAt: null })
-    .populate('classId', 'name gradeLevel');
+    .populate('classId', 'name gradeLevel')
+    .populate('userId', 'email firstName lastName');
   
   if (!student) {
     throw new AppError(404, 'NOT_FOUND', 'Student not found');
@@ -150,6 +198,37 @@ router.get('/:id/guardians', authenticate, asyncHandler(async (req: AuthRequest,
   res.json({ data: guardians });
 }));
 
+// Get guardians for the currently authenticated parent user
+router.get('/guardians/me', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+  const guardians = await Guardian.find({ userId }).populate('studentId', 'firstName lastName admissionNo');
+  res.json({ data: guardians });
+}));
+
+// Get grades for a student
+router.get('/:id/grades', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const grades = await Grade.find({ studentId: req.params.id })
+    .populate('subjectId', 'name')
+    .populate('examId', 'name')
+    .sort({ createdAt: -1 });
+
+  res.json({ data: grades });
+}));
+
+// Get attendance for a student
+router.get('/:id/attendance', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const records = await Attendance.find({ studentId: req.params.id })
+    .sort({ date: -1 });
+
+  res.json({ data: records });
+}));
+
+// Get invoices for a student
+router.get('/:id/invoices', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const invoices = await Invoice.find({ studentId: req.params.id }).sort({ dueDate: -1 });
+  res.json({ data: invoices });
+}));
+
 // Add guardian
 router.post('/:id/guardians', authenticate, authorize('admin', 'academic_admin'), asyncHandler(async (req: AuthRequest, res: any) => {
   const data = createGuardianSchema.parse(req.body);
@@ -169,8 +248,17 @@ router.post('/:id/guardians', authenticate, authorize('admin', 'academic_admin')
 }));
 
 // Update guardian
-router.patch('/:id/guardians/:guardianId', authenticate, authorize('admin', 'academic_admin'), asyncHandler(async (req: AuthRequest, res: any) => {
+router.patch('/:id/guardians/:guardianId', authenticate, authorize('admin', 'academic_admin', 'parent'), asyncHandler(async (req: AuthRequest, res: any) => {
   const data = createGuardianSchema.partial().parse(req.body);
+
+  // If parent user is editing, ensure they own this guardian record
+  if (req.user && req.user.role === 'parent') {
+    const g = await Guardian.findById(req.params.guardianId);
+    if (!g) throw new AppError(404, 'NOT_FOUND', 'Guardian not found');
+    if (g.userId && g.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Cannot modify other guardian records' } });
+    }
+  }
   
   if (data.isPrimary) {
     await Guardian.updateMany(
@@ -193,4 +281,5 @@ router.patch('/:id/guardians/:guardianId', authenticate, authorize('admin', 'aca
 }));
 
 export default router;
+
 

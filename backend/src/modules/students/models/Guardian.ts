@@ -3,6 +3,7 @@ import { BaseDocument } from '../../../types';
 
 export interface IGuardian extends BaseDocument {
   studentId: mongoose.Types.ObjectId;
+  userId?: mongoose.Types.ObjectId;
   name: string;
   relation: string;
   phone: string;
@@ -49,6 +50,11 @@ const guardianSchema = new Schema<IGuardian>(
     isPrimary: {
       type: Boolean,
       default: false,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
     },
   },
   {

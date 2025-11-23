@@ -5,7 +5,9 @@ import { seedAcademicYear } from './academicYearSeeder';
 import { seedSubjects } from './subjectSeeder';
 import { seedClasses } from './classSeeder';
 import { seedStudents } from './studentSeeder';
+import { seedAttendance } from './attendanceSeeder';
 import { seedExams } from './examSeeder';
+import { seedGrades } from './gradeSeeder';
 import { seedFinance } from './financeSeeder';
 
 async function seedAll() {
@@ -27,9 +29,11 @@ async function seedAll() {
     
     // Users and related data
     await seedStudents();
+    await seedAttendance();
     
     // Academic data
     await seedExams();
+    await seedGrades();
     
     // Financial data
     await seedFinance();

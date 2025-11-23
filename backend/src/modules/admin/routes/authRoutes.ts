@@ -4,6 +4,7 @@ import { login, refreshToken, createUser } from '../services/authService';
 import { authenticate, authorize } from '../../../middlewares/auth';
 import { asyncHandler } from '../../../utils/errors';
 import { AuthRequest, UserRole } from '../../../types';
+import Student from '../../students/models/Student';
 
 const router = Router();
 
@@ -52,6 +53,16 @@ router.post('/register', authenticate, authorize('admin'), asyncHandler(async (r
     role: parsed.role,
   });
   res.status(201).json({ data: user });
+}));
+
+// Convenience endpoint: get the student profile linked to the authenticated user
+router.get('/me/student', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+  const student = await Student.findOne({ userId, deletedAt: null }).populate('classId', 'name gradeLevel').populate('userId', 'email firstName lastName');
+  if (!student) {
+    return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Student profile not found for this user' } });
+  }
+  res.json({ data: student });
 }));
 
 export default router;

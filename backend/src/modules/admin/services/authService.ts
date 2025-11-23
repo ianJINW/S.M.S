@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { config } from '../../../config';
 import User from '../models/User';
 import { JWTPayload, UserRole } from '../../../types';
@@ -17,18 +17,16 @@ export interface LoginResponse {
 }
 
 export const generateTokens = (payload: { id: string; email: string; role: string }): { accessToken: string; refreshToken: string } => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const accessToken: any = jwt.sign(
+  const accessToken = jwt.sign(
     { sub: payload.id, email: payload.email, role: payload.role },
-    config.jwt.secret,
-    { expiresIn: config.jwt.accessTokenTtl }
+    config.jwt.secret as jwt.Secret,
+    { expiresIn: config.jwt.accessTokenTtl as jwt.SignOptions['expiresIn'] }
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const refreshToken: any = jwt.sign(
+  const refreshToken = jwt.sign(
     { sub: payload.id, type: 'refresh' },
-    config.jwt.refreshSecret,
-    { expiresIn: config.jwt.refreshTokenTtl }
+    config.jwt.refreshSecret as jwt.Secret,
+    { expiresIn: config.jwt.refreshTokenTtl as jwt.SignOptions['expiresIn'] }
   );
 
   return { accessToken: String(accessToken), refreshToken: String(refreshToken) };

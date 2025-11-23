@@ -7,6 +7,11 @@ import Academics from './app/Academics';
 import Exams from './app/Exams';
 import Finance from './app/Finance';
 import About from './app/About';
+import Staff from './app/Staff';
+import AttendancePage from './app/Attendance';
+import Reports from './app/Reports';
+import StudentDashboard from './app/StudentDashboard';
+import ParentDashboard from './app/ParentDashboard';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import { appRoutes } from './components/routes';
@@ -32,6 +37,11 @@ function App() {
               '/exams': <Exams />,
               '/finance': <Finance />,
               '/about': <About />,
+              '/staff': <Staff />,
+              '/attendance': <AttendancePage />,
+              '/reports': <Reports />,
+              '/student': <StudentDashboard />,
+              '/parent': <ParentDashboard />,
             };
 
             const element = componentMap[r.path] || <Navigate to="/dashboard" replace />;
@@ -61,7 +71,7 @@ function App() {
             );
           })}
 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/about" replace />} />
         </Routes>
       </main>
 

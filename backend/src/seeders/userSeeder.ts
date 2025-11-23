@@ -27,6 +27,30 @@ export async function seedUsers() {
         role: 'teacher',
         isActive: true,
       },
+      {
+        email: 'finance@school.com',
+        password: hashedPassword,
+        firstName: 'Finance',
+        lastName: 'User',
+        role: 'finance',
+        isActive: true,
+      },
+      {
+        email: 'academics@school.com',
+        password: hashedPassword,
+        firstName: 'Academic',
+        lastName: 'Admin',
+        role: 'academic_admin',
+        isActive: true,
+      },
+      {
+        email: 'parent@school.com',
+        password: hashedPassword,
+        firstName: 'Parent',
+        lastName: 'User',
+        role: 'parent',
+        isActive: true,
+      },
     ];
 
     await User.insertMany(users);

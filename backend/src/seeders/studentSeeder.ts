@@ -1,11 +1,14 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import '../modules/students/models/Student';
 import '../modules/students/models/Guardian';
 import '../modules/academics/models/Class';
+import '../modules/admin/models/User';
 
 const Student = mongoose.model('Student');
 const Guardian = mongoose.model('Guardian');
 const Class = mongoose.model('Class');
+const User = mongoose.model('User');
 
 export async function seedStudents() {
   try {
@@ -80,8 +83,57 @@ export async function seedStudents() {
       }
     ];
 
-    await Guardian.insertMany(guardians);
-    console.log('✅ Students and Guardians seeded');
+    const insertedGuardians = await Guardian.insertMany(guardians);
+
+    // Create User accounts for students and link them
+    const defaultPassword = 'password123';
+    const hashed = await bcrypt.hash(defaultPassword, 10);
+
+    type SeededStudent = mongoose.Document & {
+      emails?: string[];
+      admissionNo?: string;
+      firstName?: string;
+      lastName?: string;
+    };
+
+    for (const s of savedStudents as SeededStudent[]) {
+      const email = s.emails && s.emails.length ? s.emails[0] : `${s.admissionNo}@school.local`;
+      let user = await User.findOne({ email });
+      if (!user) {
+        user = await User.create({
+          email,
+          password: hashed,
+          firstName: s.firstName,
+          lastName: s.lastName,
+          role: 'student',
+          isActive: true,
+        });
+      }
+
+      // link user to student
+      await Student.findByIdAndUpdate(s._id, { $set: { userId: user._id } });
+    }
+
+    // Create User accounts for guardians (parents) and link them
+    type SeededGuardian = mongoose.Document & { name?: string; email?: string };
+    for (const g of insertedGuardians as SeededGuardian[]) {
+      let user = await User.findOne({ email: g.email });
+      if (!user) {
+        const parts = (g.name || '').split(' ');
+        user = await User.create({
+          email: g.email,
+          password: hashed,
+          firstName: parts[0] || 'Parent',
+          lastName: parts.slice(1).join(' ') || 'User',
+          role: 'parent',
+          isActive: true,
+        });
+      }
+
+      await Guardian.findByIdAndUpdate(g._id, { $set: { userId: user._id } });
+    }
+
+    console.log('✅ Students, Guardians and related user accounts seeded');
   } catch (error) {
     console.error('❌ Error seeding students and guardians:', error);
     throw error;
