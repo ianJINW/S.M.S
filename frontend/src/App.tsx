@@ -14,6 +14,15 @@ import StudentDashboard from './app/StudentDashboard';
 import ParentDashboard from './app/ParentDashboard';
 import StudentProfile from './app/StudentProfile';
 import Profile from './app/Profile';
+import StudentsNew from './app/StudentsNew';
+import AcademicsClasses from './app/AcademicsClasses';
+import AcademicsSubjects from './app/AcademicsSubjects';
+import AcademicsClassNew from './app/AcademicsClassNew';
+import ExamsPublished from './app/ExamsPublished';
+import ExamsNew from './app/ExamsNew';
+import ExamsPublish from './app/ExamsPublish';
+import FinanceCreate from './app/FinanceCreate';
+import FinanceInvoices from './app/FinanceInvoices';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import { appRoutes } from './components/routes';
@@ -70,6 +79,20 @@ function App() {
             path="/students/:id"
             element={<ProtectedRoute allowedRoles={['admin', 'academic_admin', 'teacher']}><StudentProfile /></ProtectedRoute>}
           />
+
+          {/* New / management pages (placeholders) */}
+          <Route path="/students/new" element={<ProtectedRoute allowedRoles={['admin', 'academic_admin', 'teacher']}><StudentsNew /></ProtectedRoute>} />
+
+          <Route path="/academics/classes" element={<ProtectedRoute allowedRoles={['admin', 'academic_admin', 'teacher']}><AcademicsClasses /></ProtectedRoute>} />
+          <Route path="/academics/subjects" element={<ProtectedRoute allowedRoles={['admin', 'academic_admin', 'teacher']}><AcademicsSubjects /></ProtectedRoute>} />
+          <Route path="/academics/classes/new" element={<ProtectedRoute allowedRoles={['admin', 'academic_admin']}><AcademicsClassNew /></ProtectedRoute>} />
+
+          <Route path="/exams/published" element={<ExamsPublished />} />
+          <Route path="/exams/new" element={<ProtectedRoute allowedRoles={['teacher', 'admin', 'academic_admin']}><ExamsNew /></ProtectedRoute>} />
+          <Route path="/exams/publish" element={<ProtectedRoute allowedRoles={['teacher', 'admin', 'academic_admin']}><ExamsPublish /></ProtectedRoute>} />
+
+          <Route path="/finance/create" element={<ProtectedRoute allowedRoles={['finance', 'admin']}><FinanceCreate /></ProtectedRoute>} />
+          <Route path="/finance/invoices" element={<ProtectedRoute>{<FinanceInvoices />}</ProtectedRoute>} />
 
           {/* User profile (authenticated) */}
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

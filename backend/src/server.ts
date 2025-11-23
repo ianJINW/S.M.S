@@ -23,7 +23,7 @@ app.use(helmet());
 app.use(cors({
   origin: config.cors.origins,
   credentials: true,
-}));
+})); 
 
 // Rate limiting
 const limiter = rateLimit({
