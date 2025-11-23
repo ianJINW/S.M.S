@@ -21,67 +21,51 @@ export async function seedStudents() {
       throw new Error('No active classes found. Please seed classes first.');
     }
 
-    // Create students first
-    const students = [
-      {
-        firstName: 'Alice',
-        lastName: 'Doe',
-        dob: new Date('2018-05-15'),
-        gender: 'Female',
-        admissionNo: 'ST2025001',
-        classId: classes[0]._id,
-        emails: ['alice.doe@student.school.com'],
-        contacts: ['+1234567892'],
-        address: '123 Parent Street', 
-        status: 'active'
-      },
-      {
-        firstName: 'Bob',
-        lastName: 'Smith',
-        dob: new Date('2018-08-22'),
-        gender: 'Male',
-        admissionNo: 'ST2025002',
-        classId: classes[0]._id,
-        emails: ['bob.smith@student.school.com'],
-        contacts: ['+1234567893'],
-        address: '456 Guardian Avenue',
-        status: 'active'
-      }
-    ];
+    // Create 12 students programmatically (at least 10)
+    const students: any[] = [];
+    const startYear = 2016;
+    for (let i = 1; i <= 12; i++) {
+      const first = `Student${i}`;
+      const last = `Family${Math.ceil(i / 2)}`;
+      const admissionNo = `ST2025${String(i).padStart(3, '0')}`;
+      const dob = new Date(startYear + (i % 6), (i % 12), (i % 28) + 1);
+      const cls = classes[i % classes.length];
+
+      students.push({
+        firstName: first,
+        lastName: last,
+        dob,
+        gender: i % 2 === 0 ? 'Male' : 'Female',
+        admissionNo,
+        classId: cls._id,
+        emails: [`${first.toLowerCase()}.${last.toLowerCase()}@student.school.com`],
+        contacts: [`+10000000${100 + i}`],
+        address: `Street ${i}`,
+        status: 'active',
+      });
+    }
 
     const savedStudents = await Student.insertMany(students);
 
-    // Create guardians for the students
-    const guardians = [
-      {
-        name: 'John Doe',
-        studentId: savedStudents[0]._id,
-        relation: 'Father',
-        phone: '+1234567890',
-        email: 'john.doe@example.com',
+    // Create guardians for each student
+    const guardians: any[] = [];
+    for (let i = 0; i < savedStudents.length; i++) {
+      const s = savedStudents[i];
+      guardians.push({
+        name: `${s.firstName}Parent`,
+        studentId: s._id,
+        relation: 'Parent',
+        phone: `+20000000${100 + i}`,
+        email: `parent${i + 1}@example.com`,
         address: {
-          street: '123 Parent Street',
+          street: s.address || `Street ${i + 1}`,
           city: 'Example City',
           state: 'EX',
-          zipCode: '12345'
+          zipCode: '12345',
         },
-        isPrimary: true
-      },
-      {
-        name: 'Jane Smith',
-        studentId: savedStudents[1]._id,
-        relation: 'Mother',
-        phone: '+1234567891',
-        email: 'jane.smith@example.com',
-        address: {
-          street: '456 Guardian Avenue',
-          city: 'Example City',
-          state: 'EX',
-          zipCode: '12345'
-        },
-        isPrimary: true
-      }
-    ];
+        isPrimary: true,
+      });
+    }
 
     const insertedGuardians = await Guardian.insertMany(guardians);
 

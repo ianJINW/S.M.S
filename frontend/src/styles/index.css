@@ -3,6 +3,25 @@
 @tailwind utilities;
 
 :root {
+  --bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --primary: #4f46e5;
+}
+
+[data-theme='dark'] {
+  --bg: #0b1220;
+  --text: #e6eef8;
+  --muted: #9ca3af;
+  --primary: #7c3aed;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+:root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;

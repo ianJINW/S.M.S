@@ -10,6 +10,7 @@ export interface IUser extends BaseDocument {
   role: UserRole;
   isActive: boolean;
   lastLogin?: Date;
+  themePreference?: 'light' | 'dark';
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -47,6 +48,10 @@ const userSchema = new Schema<IUser>(
       default: true,
     },
     lastLogin: Date,
+    themePreference: {
+      type: String,
+      enum: ['light', 'dark'],
+    },
     deletedAt: Date,
   },
   {

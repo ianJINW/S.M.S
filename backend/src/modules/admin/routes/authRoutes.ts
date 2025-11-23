@@ -65,4 +65,27 @@ router.get('/me/student', authenticate, asyncHandler(async (req: AuthRequest, re
   res.json({ data: student });
 }));
 
+// Return authenticated user's profile (including optional theme preference)
+router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+  const user = await (await import('../models/User')).default.findById(userId).select('-password');
+  if (!user) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+  res.json({ data: user });
+}));
+
+// Update authenticated user's profile (allow updating themePreference)
+router.patch('/me', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
+  const body = req.body as any;
+  const allowed = {} as any;
+  if (body.themePreference && (body.themePreference === 'light' || body.themePreference === 'dark')) {
+    allowed.themePreference = body.themePreference;
+  }
+
+  const userId = req.user && (req.user as any)._id ? (req.user as any)._id : (req.user as any).id;
+  const UserModel = (await import('../models/User')).default;
+  const user = await UserModel.findByIdAndUpdate(userId, { $set: allowed }, { new: true }).select('-password');
+  if (!user) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+  res.json({ data: user });
+}));
+
 export default router;

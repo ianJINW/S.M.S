@@ -12,6 +12,8 @@ import AttendancePage from './app/Attendance';
 import Reports from './app/Reports';
 import StudentDashboard from './app/StudentDashboard';
 import ParentDashboard from './app/ParentDashboard';
+import StudentProfile from './app/StudentProfile';
+import Profile from './app/Profile';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import { appRoutes } from './components/routes';
@@ -46,30 +48,31 @@ function App() {
 
             const element = componentMap[r.path] || <Navigate to="/dashboard" replace />;
 
-            if (r.public) {
-              return <Route key={r.path} path={r.path} element={element} />;
-            }
+            // If route declares `roles` (null = any authenticated user, [] = none), treat as protected
+            if (typeof r.roles !== 'undefined') {
+              if (r.roles === null) {
+                return (
+                  <Route key={r.path} path={r.path} element={<ProtectedRoute>{element}</ProtectedRoute>} />
+                );
+              }
 
-            // protected routes
-            if (r.roles === null) {
               return (
-                <Route
-                  key={r.path}
-                  path={r.path}
-                  element={<ProtectedRoute>{element}</ProtectedRoute>}
-                />
+                <Route key={r.path} path={r.path} element={<ProtectedRoute allowedRoles={r.roles || []}>{element}</ProtectedRoute>} />
               );
             }
 
-            // role restricted
-            return (
-              <Route
-                key={r.path}
-                path={r.path}
-                element={<ProtectedRoute allowedRoles={r.roles || []}>{element}</ProtectedRoute>}
-              />
-            );
+            // Public route (no roles specified)
+            return <Route key={r.path} path={r.path} element={element} />;
           })}
+
+          {/* Student profile route */}
+          <Route
+            path="/students/:id"
+            element={<ProtectedRoute allowedRoles={['admin', 'academic_admin', 'teacher']}><StudentProfile /></ProtectedRoute>}
+          />
+
+          {/* User profile (authenticated) */}
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to="/about" replace />} />
         </Routes>

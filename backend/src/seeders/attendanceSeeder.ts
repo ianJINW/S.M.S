@@ -14,7 +14,7 @@ export async function seedAttendance() {
     await Attendance.deleteMany({});
 
     // find some students and a teacher
-    const students = await Student.find({}).limit(6);
+    const students = await Student.find({}).limit(12);
     const classDoc = await ClassModel.findOne({});
     const teacher = await User.findOne({ role: 'teacher' });
 

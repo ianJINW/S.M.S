@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
     <footer className="bg-gray-100 text-gray-600 mt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
         <div className="text-sm">
-          School Management System • {year}
+          © {year} School Management System — Professional Edition
         </div>
         <div className="text-sm">Built with React + TypeScript</div>
       </div>

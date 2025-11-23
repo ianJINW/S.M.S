@@ -15,40 +15,26 @@ export async function seedClasses() {
       throw new Error('No active academic year found. Please seed academic years first.');
     }
 
-    const classes = [
-      {
-        name: 'Grade 1A',
+    const classes: any[] = [];
+    // create 10 classes across grade levels
+    for (let g = 1; g <= 5; g++) {
+      classes.push({
+        name: `Grade ${g}A`,
         section: 'A',
-        gradeLevel: 1,
+        gradeLevel: g,
         academicYear: currentYear._id,
         capacity: 30,
         status: 'ACTIVE',
-      },
-      {
-        name: 'Grade 1B',
+      });
+      classes.push({
+        name: `Grade ${g}B`,
         section: 'B',
-        gradeLevel: 1,
+        gradeLevel: g,
         academicYear: currentYear._id,
         capacity: 30,
         status: 'ACTIVE',
-      },
-      {
-        name: 'Grade 2A',
-        section: 'A',
-        gradeLevel: 2,
-        academicYear: currentYear._id,
-        capacity: 30,
-        status: 'ACTIVE',
-      },
-      {
-        name: 'Grade 2B',
-        section: 'B',
-        gradeLevel: 2,
-        academicYear: currentYear._id,
-        capacity: 30,
-        status: 'ACTIVE',
-      }
-    ];
+      });
+    }
 
     await Class.insertMany(classes);
     console.log('✅ Classes seeded');

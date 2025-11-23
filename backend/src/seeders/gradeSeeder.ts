@@ -15,7 +15,7 @@ export async function seedGrades() {
   try {
     await Grade.deleteMany({});
 
-    const students = await Student.find({}).limit(6);
+    const students = await Student.find({}).limit(12);
     const subject = await Subject.findOne({});
     const exam = await Exam.findOne({});
     const recorder = await User.findOne({ role: 'teacher' });

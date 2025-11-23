@@ -27,9 +27,9 @@ export const Academics = () => {
       <div className="space-y-3">
         <div>
           <h2 className="font-semibold">Quick actions</h2>
-          <div className="mt-2 space-x-2">
-            <button className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">View Classes</button>
-            <button className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">View Subjects</button>
+            <div className="mt-2 space-x-2">
+            <button onClick={() => navigate('/academics/classes')} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">View Classes</button>
+            <button onClick={() => navigate('/academics/subjects')} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">View Subjects</button>
           </div>
         </div>
 
@@ -38,7 +38,7 @@ export const Academics = () => {
             <h3 className="font-semibold">Administrative</h3>
             <p className="text-sm text-gray-600">You can create classes, assign teachers, and manage grade levels.</p>
             <div className="mt-2">
-              <button className="px-3 py-1 bg-green-600 text-white rounded">Create Class</button>
+              <button onClick={() => navigate('/academics/classes/new')} className="px-3 py-1 bg-green-600 text-white rounded">Create Class</button>
             </div>
           </div>
         ) : (

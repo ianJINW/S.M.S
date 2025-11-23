@@ -15,6 +15,7 @@ export interface LoginResponse {
     role: string;
     firstName: string;
     lastName: string;
+    themePreference?: 'light' | 'dark';
   };
 }
 
@@ -23,6 +24,16 @@ export const authApi = {
     const response = await apiClient.post<{ data: LoginResponse }>('/auth/login', data);
     const result = response.data.data;
     useAuthStore.getState().setAuth(result.user, result.accessToken, result.refreshToken);
+    // If server provides a theme preference for the user, apply it immediately
+    try {
+      const theme = (result.user as any).themePreference as 'light' | 'dark' | undefined;
+      if (theme === 'light' || theme === 'dark') {
+        localStorage.setItem('theme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    } catch (e) {
+      // ignore
+    }
     return result;
   },
 

@@ -17,8 +17,24 @@ export const Login = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken);
-      const from = (location.state as any)?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      const requested = (location.state as any)?.from?.pathname;
+
+      const roleRedirects: Record<string, string> = {
+        student: '/student',
+        parent: '/parent',
+        teacher: '/dashboard',
+        finance: '/finance',
+        admin: '/dashboard',
+        academic_admin: '/dashboard',
+      };
+
+      if (requested && requested !== '/login') {
+        navigate(requested, { replace: true });
+        return;
+      }
+
+      const target = roleRedirects[data.user.role] || '/dashboard';
+      navigate(target, { replace: true });
     },
     onError: (err: any) => {
       setError(err.response?.data?.error?.message || 'Login failed');

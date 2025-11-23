@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { appRoutes } from './routes';
 import { useState } from 'react';
+import useTheme from '../hooks/useTheme';
+import { Sun, Moon } from 'lucide-react';
 
 const NavBar: React.FC = () => {
   const { user, clearAuth } = useAuthStore();
@@ -14,6 +16,8 @@ const NavBar: React.FC = () => {
     clearAuth();
     navigate('/login');
   };
+
+  const { theme, toggle } = useTheme();
 
   const linkClass = (isActive: boolean) =>
     `block px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-indigo-700 text-white' : 'text-gray-200 hover:bg-indigo-600 hover:text-white'}`;
@@ -48,6 +52,9 @@ const NavBar: React.FC = () => {
                   className="px-3 py-1 bg-white text-indigo-700 rounded-md text-sm font-medium hover:bg-gray-100"
                 >
                   Logout
+                </button>
+                <button onClick={toggle} className="ml-2 px-2 py-1 bg-gray-200 text-sm rounded-md flex items-center">
+                  {theme === 'dark' ? <Moon className="h-4 w-4 text-gray-700" /> : <Sun className="h-4 w-4 text-yellow-400" />}
                 </button>
               </>
             ) : (

@@ -26,15 +26,15 @@ export const Exams = () => {
 
       <div className="space-y-3">
         <div>
-          <button className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">View Published Exams</button>
+          <button onClick={() => navigate('/exams/published')} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">View Published Exams</button>
         </div>
 
         {(user.role === 'teacher' || user.role === 'admin' || user.role === 'academic_admin') && (
           <div>
             <h3 className="font-semibold">Instructor actions</h3>
             <div className="mt-2 space-x-2">
-              <button className="px-3 py-1 bg-green-600 text-white rounded">Create Exam</button>
-              <button className="px-3 py-1 bg-yellow-500 text-white rounded">Publish Exam</button>
+              <button onClick={() => navigate('/exams/new')} className="px-3 py-1 bg-green-600 text-white rounded">Create Exam</button>
+              <button onClick={() => navigate('/exams/publish')} className="px-3 py-1 bg-yellow-500 text-white rounded">Publish Exam</button>
             </div>
           </div>
         )}

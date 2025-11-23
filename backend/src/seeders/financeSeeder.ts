@@ -12,56 +12,58 @@ export async function seedFinance() {
     await Invoice.deleteMany({});
     await Payment.deleteMany({});
 
-    // Get a student
-    const student = await Student.findOne({ admissionNo: 'ST2025001' });
-    if (!student) {
-      throw new Error('No student found. Please seed students first.');
+    // Create invoices for multiple students
+    const students = await Student.find({}).limit(12);
+    if (!students || students.length === 0) {
+      throw new Error('No students found. Please seed students first.');
     }
 
-    // Create invoice
-    const total = 1200;
-    const balance = 1200;
-    const invoice = {
-      studentId: student._id,
-      invoiceNo: `INV-${Date.now()}`,
-      dueDate: new Date('2025-12-31'),
-      currency: 'USD',
-      items: [
-        {
-          head: 'Tuition Fee',
-          amount: 1000,
-          description: 'First semester tuition fee'
-        },
-        {
-          head: 'Laboratory Fee',
-          amount: 200,
-          description: 'Science lab usage fee'
-        }
-      ],
-      total,
-      balance,
-      status: 'open'
-    };
+    const invoices: any[] = [];
+    const payments: any[] = [];
+    for (let i = 0; i < students.length; i++) {
+      const s = students[i];
+      const total = 500 + (i * 50);
+      const invoice = {
+        studentId: s._id,
+        invoiceNo: `INV-${Date.now()}-${i}`,
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        currency: 'USD',
+        items: [
+          { head: 'Tuition Fee', amount: total - 100 },
+          { head: 'Activity Fee', amount: 100 },
+        ],
+        total,
+        balance: total,
+        status: 'open',
+      };
+      invoices.push(invoice);
+    }
 
-    const savedInvoice = await Invoice.create(invoice);
+    const saved = await Invoice.insertMany(invoices);
 
-    // Create payment
-    const payment = {
-      invoiceId: savedInvoice._id,
-      method: 'bank',
-      amount: 600,
-      currency: 'USD',
-      txnRef: `TXN-${Date.now()}`,
-      status: 'succeeded',
-      receivedAt: new Date(),
-      idempotencyKey: `PAY-${Date.now()}`
-    };
+    // Add payments for half of them
+    for (let i = 0; i < saved.length; i++) {
+      if (i % 2 === 0) {
+        const inv = saved[i];
+        const amount = Math.round(inv.total / 2);
+        payments.push({
+          invoiceId: inv._id,
+          method: 'card',
+          amount,
+          currency: inv.currency,
+          txnRef: `TXN-${Date.now()}-${i}`,
+          status: 'succeeded',
+          receivedAt: new Date(),
+          idempotencyKey: `PAY-${Date.now()}-${i}`,
+        });
+        // adjust invoice
+        inv.balance = inv.total - amount;
+        inv.status = inv.balance === 0 ? 'paid' : 'partial';
+        await inv.save();
+      }
+    }
 
-    await Payment.create(payment);
-
-    // Update invoice status
-    savedInvoice.status = 'partial';
-    await savedInvoice.save();
+    if (payments.length) await Payment.insertMany(payments);
 
     console.log('✅ Finance data seeded');
   } catch (error) {

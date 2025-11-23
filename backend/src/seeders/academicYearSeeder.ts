@@ -8,21 +8,19 @@ export async function seedAcademicYear() {
     await AcademicYear.deleteMany({}); // Clear existing academic years
 
     const currentYear = new Date().getFullYear();
-    
-    const academicYears = [
-      {
-        name: `${currentYear}-${currentYear + 1}`,
-        startDate: new Date(currentYear, 8, 1), // September 1st
-        endDate: new Date(currentYear + 1, 7, 31), // August 31st
-        isActive: true,
-      },
-      {
-        name: `${currentYear + 1}-${currentYear + 2}`,
-        startDate: new Date(currentYear + 1, 8, 1),
-        endDate: new Date(currentYear + 2, 7, 31),
-        isActive: false,
-      }
-    ];
+
+    // Seed the last 10 academic years (including current)
+    const academicYears: any[] = [];
+    for (let i = 0; i < 10; i++) {
+      const start = currentYear - (9 - i);
+      const end = start + 1;
+      academicYears.push({
+        name: `${start}-${end}`,
+        startDate: new Date(start, 8, 1),
+        endDate: new Date(end, 7, 31),
+        isActive: start === currentYear,
+      });
+    }
 
     await AcademicYear.insertMany(academicYears);
     console.log('✅ Academic Years seeded');

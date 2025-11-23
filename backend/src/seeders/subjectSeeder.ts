@@ -7,48 +7,24 @@ export async function seedSubjects() {
   try {
     await Subject.deleteMany({});
 
-    const subjects = [
-      {
-        name: 'Mathematics',
-        code: 'MATH101',
-        description: 'Basic mathematics including algebra, geometry, and arithmetic',
-        credits: 4,
-        gradeLevel: 1,
-        isActive: true,
-      },
-      {
-        name: 'English',
-        code: 'ENG101',
-        description: 'English language and literature',
-        credits: 3,
-        gradeLevel: 1,
-        isActive: true,
-      },
-      {
-        name: 'Science',
-        code: 'SCI101',
-        description: 'Basic science including physics, chemistry, and biology',
-        credits: 4,
-        gradeLevel: 1,
-        isActive: true,
-      },
-      {
-        name: 'History',
-        code: 'HIST101',
-        description: 'World history and civilization',
-        credits: 3,
-        gradeLevel: 1,
-        isActive: true,
-      },
-      {
-        name: 'Computer Science',
-        code: 'CS101',
-        description: 'Introduction to computer science and programming',
-        credits: 4,
-        gradeLevel: 1,
-        isActive: true,
-      }
+    const base = [
+      { name: 'Mathematics', code: 'MATH101', description: 'Algebra, geometry, arithmetic', credits: 4 },
+      { name: 'English', code: 'ENG101', description: 'English language and literature', credits: 3 },
+      { name: 'Science', code: 'SCI101', description: 'Physics, chemistry, biology', credits: 4 },
+      { name: 'History', code: 'HIST101', description: 'World history and civilization', credits: 3 },
+      { name: 'Computer Science', code: 'CS101', description: 'Intro to CS and programming', credits: 4 },
+      { name: 'Geography', code: 'GEO101', description: 'Physical and human geography', credits: 3 },
+      { name: 'Art', code: 'ART101', description: 'Visual arts and appreciation', credits: 2 },
+      { name: 'Music', code: 'MUS101', description: 'Music theory and practice', credits: 2 },
+      { name: 'Physical Education', code: 'PE101', description: 'Sports and health', credits: 1 },
+      { name: 'Biology', code: 'BIO101', description: 'Study of living organisms', credits: 4 },
     ];
+
+    const subjects = base.map((s, i) => ({
+      ...s,
+      gradeLevel: (i % 6) + 1,
+      isActive: true,
+    }));
 
     await Subject.insertMany(subjects);
     console.log('✅ Subjects seeded');

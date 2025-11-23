@@ -13,6 +13,7 @@ export interface LoginResponse {
     role: string;
     firstName: string;
     lastName: string;
+    themePreference?: 'light' | 'dark';
   };
 }
 
@@ -62,6 +63,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
+      themePreference: (user as any).themePreference,
     },
   };
 };

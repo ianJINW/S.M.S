@@ -1,15 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import useDebounce from '../hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentsApi } from '../api/students';
 
 export const Students = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debounced = useDebounce(search, 400);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['students', { page, q: search }],
-    queryFn: () => studentsApi.getAll({ page, pageSize: 20, q: search || undefined }),
+    queryKey: ['students', { page, q: debounced }],
+    queryFn: () => studentsApi.getAll({ page, pageSize: 20, q: debounced || undefined }),
   });
 
   const deleteMutation = useMutation({
@@ -26,7 +30,7 @@ export const Students = () => {
     <div className="p-6">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Students</h1>
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+        <button onClick={() => navigate('/students/new')} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
           Add Student
         </button>
       </div>
@@ -58,7 +62,7 @@ export const Students = () => {
                   </p>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200">
+                  <button onClick={() => navigate(`/students/${student._id}`)} className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200">
                     View
                   </button>
                   <button
